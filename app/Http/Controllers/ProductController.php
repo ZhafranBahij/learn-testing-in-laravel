@@ -15,7 +15,8 @@ class ProductController extends Controller
     {
         $datas = Product::query()
                     ->latest()
-                    ->get();
+                    ->paginate(10);
+
         return view('product.index', [
             'datas' => $datas,
         ]);

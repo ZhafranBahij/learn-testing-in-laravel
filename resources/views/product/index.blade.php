@@ -19,6 +19,7 @@
                         {{ __("Nothing in here") }}
                         @endforelse
                     </table>
+                    {{ $datas->links() }}
                 </div>
             </div>
         </div>
