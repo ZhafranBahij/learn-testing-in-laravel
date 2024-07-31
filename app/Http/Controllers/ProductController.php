@@ -27,7 +27,11 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        if (! auth()->user()->is_admin) {
+            abort(403);
+        }
+
+        return view('product.create');
     }
 
     /**
@@ -35,7 +39,9 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        //
+        Product::create($request->validated());
+
+        return to_route('products.index');
     }
 
     /**

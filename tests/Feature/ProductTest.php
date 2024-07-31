@@ -13,31 +13,37 @@ class ProductTest extends TestCase
 
     use RefreshDatabase;
 
+    private User $user;
+    private User $admin;
+
+    // Same as constructor in another language
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->user = User::factory()->create();
+        $this->admin = User::factory()->create([
+            'is_admin' => true,
+        ]);
+    }
+
     public function test_the_data_doesnt_has_product(): void
     {
-        // Example of acting as auth user in some page
-        $user = User::factory()->create();
-        $response = $this->actingAs($user)->get('/product');
+        $response = $this->actingAs($this->user)->get('/product');
 
         $response->assertStatus(200);
 
         $response->assertSee(__("Nothing in here"));
-
     }
 
-    /**
-     * A basic test example.
-     */
     public function test_the_data_has_product(): void
     {
-
-        $user = User::factory()->create();
 
         $product = Product::factory()->create([
             'name' => 'Shiro',
         ]);
 
-        $response = $this->actingAs($user)->get('/product');
+        $response = $this->actingAs($this->user)->get('/product');
 
         $response->assertStatus(200);
 
@@ -51,14 +57,10 @@ class ProductTest extends TestCase
     }
 
     public function test_the_data_in_paginate_doesnt_has_11th_data(){
-        $user = User::factory()->create();
-
         $products = Product::factory(11)->create();
-        // dd($products);
         $last_product = $products->last();
-        // dd($last_product);
 
-        $response = $this->actingAs($user)->get('/product');
+        $response = $this->actingAs($this->user)->get('/product');
 
         $response->assertStatus(200);
 
@@ -67,6 +69,47 @@ class ProductTest extends TestCase
             return !$collection->contains($last_product);
         });
 
+    }
+
+    public function test_admin_can_see_create_product_button(){
+        $response = $this->actingAs($this->admin)->get('/product');
+        $response->assertStatus(200);
+        $response->assertSee('Add New Product');
+    }
+
+    public function test_normal_user_cannot_see_create_product_button(){
+        $response = $this->actingAs($this->user)->get('/product');
+        $response->assertStatus(200);
+        $response->assertDontSee('Add New Product');
+    }
+
+    public function test_admin_can_access_create_product(){
+        $response = $this->actingAs($this->admin)->get('/product/create');
+        $response->assertStatus(200);
+    }
+
+    public function test_normal_user_cannot_access_create_product(){
+        $response = $this->actingAs($this->user)->get('/product/create');
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_create_product(){
+        $product = [
+            'name' => 'Miniature 123',
+            'price' => 12345,
+        ];
+
+        // Acting to create data
+        $response = $this->actingAs($this->admin)->post('/product', $product);
+
+        // Check if data redirect
+        $response->assertStatus(302);
+        $response->assertRedirect('/product');
+
+        // Check if data in database
+        $this->assertDatabaseHas('products', $product);
+        $last_product = Product::latest()->first(['name', 'price'])->toArray();
+        $this->assertEquals($product, $last_product);
     }
 
 }
