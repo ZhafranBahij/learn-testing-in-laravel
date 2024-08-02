@@ -112,4 +112,81 @@ class ProductTest extends TestCase
         $this->assertEquals($product, $last_product);
     }
 
+    public function test_admin_edit_product_page(){
+        $product = Product::factory()->create();
+
+        // Acting as admin in Edit product
+        $response = $this->actingAs($this->admin)->get('/product'.'/'.$product->id.'/edit');
+
+        // Check if admin can access
+        $response->assertStatus(200);
+
+        // Check if data in the page
+        $response->assertViewHas('data', $product);
+
+        // Check if product data in input
+        $response->assertSee('value="'.$product->name.'"', false);
+        $response->assertSee('value="'.$product->price.'"', false);
+    }
+
+    public function test_admin_update_product_but_failed_in_validation()
+    {
+        $product = Product::factory()->create();
+
+        $update_product = [
+            'name' => '',
+            'price' => '',
+        ];
+
+        // Acting as admin in update product
+        $response = $this->actingAs($this->admin)->put('/product'.'/'.$product->id, $update_product);
+
+        // Check if redirect
+        $response->assertStatus(302);
+
+        // Check if any input failed
+        $response->assertInvalid(['name', 'price']);
+    }
+
+    public function test_admin_update_product_but_success_in_validation()
+    {
+        $product = Product::factory()->create();
+
+        $update_product = [
+            'name' => 'Rabi-Rabi',
+            'price' => 30000,
+        ];
+
+        // Acting as admin in update product
+        $response = $this->actingAs($this->admin)->put('/product'.'/'.$product->id, $update_product);
+
+        // Check if redirect
+        $response->assertStatus(302);
+
+        // Check if data in database
+        $this->assertDatabaseHas('products', $update_product);
+        $selected_product = Product::find($product->id);
+
+        // Check if data same
+        $this->assertEquals($update_product['name'], $selected_product->name);
+        $this->assertEquals($update_product['price'], $selected_product->price);
+    }
+
+    public function test_admin_delete_product_successfull()
+    {
+        $product = Product::factory()->create();
+
+        // Acting as admin in delete product
+        $response = $this->actingAs($this->admin)->delete('/product'.'/'.$product->id);
+
+        // Redirect to product index
+        $response->assertStatus(302);
+        $response->assertRedirectToRoute('products.index');
+
+        // Check data in database, if data is lost
+        $this->assertDatabaseMissing('products', $product->toArray());
+        $this->assertDatabaseCount('products', 0);
+
+    }
+
 }

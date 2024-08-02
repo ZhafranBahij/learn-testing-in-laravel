@@ -17,6 +17,9 @@
                     <table>
                         @forelse ($datas as $item)
                             <tr>
+                                <td>
+                                    <a href="{{ route('products.edit', $item->id) }}">Edit</a>
+                                </td>
                                 <td>{{ $item->name }}</td>
                                 <td>{{ $item->price }}</td>
                             </tr>

@@ -57,7 +57,13 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        //
+        if (! auth()->user()->is_admin) {
+            abort(403);
+        }
+
+        return view('product.edit', [
+            'data' => $product
+        ]);
     }
 
     /**
@@ -65,7 +71,8 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product)
     {
-        //
+        $product->update( $request->validated());
+        return to_route('products.index');
     }
 
     /**
@@ -73,6 +80,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+        $product->delete();
+        return to_route('products.index');
     }
 }
