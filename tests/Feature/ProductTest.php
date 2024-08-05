@@ -29,7 +29,7 @@ class ProductTest extends TestCase
 
     public function test_the_data_doesnt_has_product(): void
     {
-        $response = $this->actingAs($this->user)->get('/product');
+        $response = $this->actingAs($this->admin)->get('/product');
 
         $response->assertStatus(200);
 
@@ -43,7 +43,7 @@ class ProductTest extends TestCase
             'name' => 'Shiro',
         ]);
 
-        $response = $this->actingAs($this->user)->get('/product');
+        $response = $this->actingAs($this->admin)->get('/product');
 
         $response->assertStatus(200);
 
@@ -60,7 +60,7 @@ class ProductTest extends TestCase
         $products = Product::factory(11)->create();
         $last_product = $products->last();
 
-        $response = $this->actingAs($this->user)->get('/product');
+        $response = $this->actingAs($this->admin)->get('/product');
 
         $response->assertStatus(200);
 
