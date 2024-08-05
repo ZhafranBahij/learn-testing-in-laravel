@@ -25,6 +25,9 @@ class ProductTest extends TestCase
         $this->admin = User::factory()->create([
             'is_admin' => true,
         ]);
+
+        $this->withoutVite();
+        $this->withoutMix();
     }
 
     public function test_the_data_doesnt_has_product(): void
