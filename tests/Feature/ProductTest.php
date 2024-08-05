@@ -189,4 +189,46 @@ class ProductTest extends TestCase
 
     }
 
+    // TEST API
+    public function test_api_get_all_product_successfull()
+    {
+        // Create and get all product
+        Product::factory()->create();
+        $all_product = Product::all();
+
+        $response = $this->getJson('api/product');
+
+        // Checking if all product in that page
+        $response->assertJson($all_product->toArray());
+    }
+
+    public function test_api_post_product_successfull()
+    {
+
+        // Setting semi data product
+        $product = [
+            'name' => 'PS Portal',
+            'price' => 123500,
+        ];
+
+        $response = $this->postJson('api/product', $product);
+
+        // Success create will get 201 code
+        $response->assertStatus(201);
+        $response->assertJson($product);
+    }
+
+    public function test_api_post_product_invalid_validation()
+    {
+        // Setting semi data product
+        $product = [
+            'name' => '',
+            'price' => 123500,
+        ];
+
+        $response = $this->postJson('api/product', $product);
+
+        $response->assertStatus(422);
+    }
+
 }
